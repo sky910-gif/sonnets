@@ -1,6 +1,6 @@
 # Sonnets
 
-Sonnets 是基于 MusicFree 插件协议实现的原生 iOS 音乐播放器。项目使用 SwiftUI、AVFoundation、MediaPlayer 与 JavaScriptCore，最低支持 iOS 18；在 iOS 26 及以上使用系统 Liquid Glass 效果，旧系统自动回退到原生材质。
+Sonnets 是基于开源项目 [MusicFree](https://github.com/maotoumao/MusicFree) 二次开发而来的原生 iOS 音乐播放器。项目使用 SwiftUI、AVFoundation、MediaPlayer 与 JavaScriptCore，最低支持 iOS 18；在 iOS 26 及以上使用系统 Liquid Glass 效果，旧系统自动回退到原生材质。
 
 ## 已实现
 
@@ -26,3 +26,9 @@ https://musicfreepluginshub.2020818.xyz/plugins.json
 ## 说明
 
 应用不内置音乐平台、账号或受版权保护的内容。插件及内容由用户自行选择，请只在获得合法授权的范围内使用。插件协议与产品思路源自 [MusicFree](https://github.com/maotoumao/MusicFree)，请同时遵守原项目和所用插件的许可条款。
+
+## 开源协议
+
+本项目基于 [MusicFree](https://github.com/maotoumao/MusicFree) 二次开发，原项目同样采用 AGPL-3.0 协议。本项目沿用相同协议，遵循自由软件基金会的 GNU Affero General Public License v3.0，详见 [LICENSE](./LICENSE)。
+
+任何对本项目的使用、修改、分发或网络服务化均须遵守 AGPL-3.0 的条款，包括公开对应的源代码。
