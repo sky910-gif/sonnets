@@ -21,14 +21,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Select newest available Xcode
+      - name: Select Xcode 26 (iOS 26 SDK)
         run: |
           set -x
-          ls -1 /Applications | grep -i Xcode || true
-          # 使用当前 runner 上最新的稳定版 Xcode（项目部署目标为 iOS 26，需要 Xcode 26）
-          LATEST=$(/usr/bin/xcodebuild -version 2>/dev/null | head -n1)
-          echo "Default Xcode: $LATEST"
-          sudo xcode-select -switch /Applications/Xcode.app
+          ls -1 /Applications | grep -i 'Xcode_26' || true
+          # 选择 runner 上最新的 Xcode 26（项目使用 iOS 26 Liquid Glass API）
+          XC=$(ls -d /Applications/Xcode_26.*.app 2>/dev/null | sort -V | tail -n1)
+          echo "Using $XC"
+          sudo xcode-select -switch "$XC"
           xcodebuild -version
           swift --version
 
