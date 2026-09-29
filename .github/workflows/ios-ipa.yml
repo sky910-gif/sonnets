@@ -1,0 +1,78 @@
+name: Build iOS IPA (unsigned)
+
+# 在 GitHub 云端 macOS runner 上构建 Sonnets（SwiftUI 原生 App），
+# 产出【未签名】IPA。无需 Mac、无需付费 Apple 开发者账号。
+# 用 Sideloadly/AltStore + 普通 Apple ID 自签安装（7 天有效）。
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [master, main]
+    paths:
+      - '.github/workflows/ios-ipa.yml'
+
+jobs:
+  build:
+    name: Build unsigned IPA
+    runs-on: macos-15
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Select newest available Xcode
+        run: |
+          set -x
+          ls -1 /Applications | grep -i Xcode || true
+          # 使用当前 runner 上最新的稳定版 Xcode（项目部署目标为 iOS 26，需要 Xcode 26）
+          LATEST=$(/usr/bin/xcodebuild -version 2>/dev/null | head -n1)
+          echo "Default Xcode: $LATEST"
+          sudo xcode-select -switch /Applications/Xcode.app
+          xcodebuild -version
+          swift --version
+
+      - name: Resolve Swift Package Manager dependencies
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project sonnets.xcodeproj \
+            -scheme sonnets \
+            -resolvePackageDependencies \
+            -scmProvider system
+
+      - name: Archive (CODE_SIGNING_ALLOWED=NO)
+        run: |
+          set -o pipefail
+          xcodebuild \
+            -project sonnets.xcodeproj \
+            -scheme sonnets \
+            -configuration Release \
+            -sdk iphoneos \
+            -archivePath $PWD/build/sonnets.xcarchive \
+            -derivedDataPath $PWD/build/derived \
+            clean archive \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY=""
+
+      - name: Package unsigned IPA
+        run: |
+          set -e
+          APP_PATH=$(find "$PWD/build/sonnets.xcarchive/Products/Applications" -maxdepth 1 -name "*.app" -type d | head -n 1)
+          if [ -z "$APP_PATH" ]; then
+            echo "::error::未找到 .app，archive 可能失败"
+            exit 1
+          fi
+          echo "Found app: $APP_PATH"
+          mkdir -p "$PWD/build/Payload"
+          cp -r "$APP_PATH" "$PWD/build/Payload/"
+          cd "$PWD/build"
+          zip -qr "sonnets-1.0-unsigned.ipa" Payload
+          shasum -a 256 "sonnets-1.0-unsigned.ipa"
+
+      - name: Upload IPA artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sonnets-unsigned-ipa
+          path: build/sonnets-1.0-unsigned.ipa
+          retention-days: 14
+          if-no-files-found: error
